@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Spell Slingers"
 run/main_scene="res://node_2d.tscn"
-config/features=PackedStringArray("4.2", "Forward Plus")
+config/features=PackedStringArray("4.2", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
 [dotnet]
@@ -23,3 +23,10 @@ project/assembly_name="Spell Slingers"
 
 version_control/plugin_name="GitPlugin"
 version_control/autoload_on_startup=true
+
+[input]
+
+jump={
+"deadzone": 0.5,
+"events": []
+}
