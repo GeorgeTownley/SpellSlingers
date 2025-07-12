@@ -1,0 +1,155 @@
+[gd_scene load_steps=8 format=3 uid="uid://cqlmdilkc6kcv"]
+
+[ext_resource type="Script" path="res://Player.cs" id="1_brijd"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7yeac"]
+size = Vector2(7.5, 22)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ensr5"]
+size = Vector2(20, 649)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_65pag"]
+size = Vector2(20, 649)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_nylb2"]
+size = Vector2(1152, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yo787"]
+size = Vector2(1152, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_aslxp"]
+size = Vector2(250, 10)
+
+[node name="Main" type="Node2D"]
+
+[node name="Player" type="CharacterBody2D" parent="."]
+position = Vector2(80, 563)
+script = ExtResource("1_brijd")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+position = Vector2(1.25, 1)
+shape = SubResource("RectangleShape2D_7yeac")
+
+[node name="ColorRect" type="ColorRect" parent="Player/CollisionShape2D"]
+offset_left = -2.0
+offset_top = -10.0
+offset_right = 2.0
+offset_bottom = 10.0
+color = Color(1, 0, 0, 1)
+metadata/_edit_use_anchors_ = true
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Ground Right" type="StaticBody2D" parent="Walls"]
+position = Vector2(1152, 324.5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/Ground Right"]
+shape = SubResource("RectangleShape2D_ensr5")
+
+[node name="ColorRect" type="ColorRect" parent="Walls/Ground Right/CollisionShape2D"]
+offset_left = -10.0
+offset_top = -324.5
+offset_right = 10.0
+offset_bottom = 324.5
+metadata/_edit_use_anchors_ = true
+
+[node name="Ground Left" type="StaticBody2D" parent="Walls"]
+position = Vector2(0, 324.5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/Ground Left"]
+shape = SubResource("RectangleShape2D_65pag")
+
+[node name="ColorRect" type="ColorRect" parent="Walls/Ground Left/CollisionShape2D"]
+offset_left = -10.0
+offset_top = -324.5
+offset_right = 10.0
+offset_bottom = 324.5
+metadata/_edit_use_anchors_ = true
+
+[node name="Ground Top" type="StaticBody2D" parent="Walls"]
+position = Vector2(576, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/Ground Top"]
+shape = SubResource("RectangleShape2D_nylb2")
+
+[node name="ColorRect" type="ColorRect" parent="Walls/Ground Top/CollisionShape2D"]
+offset_left = -576.0
+offset_top = -10.0
+offset_right = 576.0
+offset_bottom = 10.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Ground bottom" type="StaticBody2D" parent="Walls"]
+position = Vector2(576, 649)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/Ground bottom"]
+shape = SubResource("RectangleShape2D_yo787")
+
+[node name="ColorRect" type="ColorRect" parent="Walls/Ground bottom/CollisionShape2D"]
+offset_left = -576.0
+offset_top = -10.0
+offset_right = 576.0
+offset_bottom = 10.0
+metadata/_edit_use_anchors_ = true
+
+[node name="Platforms" type="Node2D" parent="."]
+
+[node name="OneWay Platform" type="StaticBody2D" parent="Platforms"]
+position = Vector2(384, 432)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/OneWay Platform"]
+shape = SubResource("RectangleShape2D_aslxp")
+one_way_collision = true
+one_way_collision_margin = 5.0
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/OneWay Platform/CollisionShape2D"]
+offset_left = -125.0
+offset_top = -5.0
+offset_right = 125.0
+offset_bottom = 5.0
+metadata/_edit_use_anchors_ = true
+
+[node name="OneWay Platform2" type="StaticBody2D" parent="Platforms"]
+position = Vector2(825, 432)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/OneWay Platform2"]
+shape = SubResource("RectangleShape2D_aslxp")
+one_way_collision = true
+one_way_collision_margin = 5.0
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/OneWay Platform2/CollisionShape2D"]
+offset_left = -125.0
+offset_top = -5.0
+offset_right = 125.0
+offset_bottom = 5.0
+metadata/_edit_use_anchors_ = true
+
+[node name="OneWay Platform3" type="StaticBody2D" parent="Platforms"]
+position = Vector2(825, 240)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/OneWay Platform3"]
+shape = SubResource("RectangleShape2D_aslxp")
+one_way_collision = true
+one_way_collision_margin = 5.0
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/OneWay Platform3/CollisionShape2D"]
+offset_left = -125.0
+offset_top = -5.0
+offset_right = 125.0
+offset_bottom = 5.0
+metadata/_edit_use_anchors_ = true
+
+[node name="OneWay Platform4" type="StaticBody2D" parent="Platforms"]
+position = Vector2(384, 240)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Platforms/OneWay Platform4"]
+shape = SubResource("RectangleShape2D_aslxp")
+one_way_collision = true
+one_way_collision_margin = 5.0
+
+[node name="ColorRect" type="ColorRect" parent="Platforms/OneWay Platform4/CollisionShape2D"]
+offset_left = -125.0
+offset_top = -5.0
+offset_right = 125.0
+offset_bottom = 5.0
+metadata/_edit_use_anchors_ = true
