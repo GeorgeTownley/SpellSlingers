@@ -1,9 +1,11 @@
-[gd_scene load_steps=8 format=3 uid="uid://cqlmdilkc6kcv"]
+[gd_scene load_steps=11 format=3 uid="uid://cqlmdilkc6kcv"]
 
 [ext_resource type="Script" path="res://Player.cs" id="1_brijd"]
+[ext_resource type="PackedScene" uid="uid://d0adxiq08tk00" path="res://ElementBufferUI.tscn" id="2_kdpj1"]
+[ext_resource type="Script" path="res://ElementBufferUI.cs" id="3_uqyk0"]
+[ext_resource type="PackedScene" uid="uid://dhwbod277jywi" path="res://SpellSystem.tscn" id="4_id06a"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_7yeac"]
-size = Vector2(7.5, 22)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_kgvim"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ensr5"]
 size = Vector2(20, 649)
@@ -28,15 +30,11 @@ script = ExtResource("1_brijd")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
 position = Vector2(1.25, 1)
-shape = SubResource("RectangleShape2D_7yeac")
+shape = SubResource("CapsuleShape2D_kgvim")
 
-[node name="ColorRect" type="ColorRect" parent="Player/CollisionShape2D"]
-offset_left = -2.0
-offset_top = -10.0
-offset_right = 2.0
-offset_bottom = 10.0
-color = Color(1, 0, 0, 1)
-metadata/_edit_use_anchors_ = true
+[node name="Polygon2D" type="Polygon2D" parent="Player/CollisionShape2D"]
+scale = Vector2(0.485, 0.485)
+polygon = PackedVector2Array(0, -30, 15, -25, 15, 25, 0, 30, -15, 25, -15, -25)
 
 [node name="Walls" type="Node2D" parent="."]
 
@@ -153,3 +151,8 @@ offset_top = -5.0
 offset_right = 125.0
 offset_bottom = 5.0
 metadata/_edit_use_anchors_ = true
+
+[node name="ElementBufferUi" parent="." instance=ExtResource("2_kdpj1")]
+script = ExtResource("3_uqyk0")
+
+[node name="SpellSystem" parent="." instance=ExtResource("4_id06a")]
