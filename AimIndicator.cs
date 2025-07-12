@@ -5,25 +5,27 @@ public partial class AimIndicator : Node2D
     [Export]
     public int TrajectoryPoints = 50;
     [Export]
-    public float TimeStep = 0.05f;  // Smaller steps for more accuracy
+    public float TimeStep = 0.05f;
     [Export]
     public float LineWidth = 1.0f;
     [Export]
-    public Color TrajectoryColor = Colors.Cyan;
+    public Color TrajectoryColor = Colors.Cyan; // Fallback color
     [Export]
     public float FadeSpeed = 5.0f;
     [Export]
-    public float MaxTrajectoryDistance = 400.0f; // How far to show trajectory before fully faded
+    public float MaxTrajectoryDistance = 400.0f;
     [Export]
-    public float FadeStartDistance = 200.0f;     // Distance where fade begins
+    public float FadeStartDistance = 200.0f;
     
     private bool isVisible = false;
     private float currentAlpha = 0.0f;
     private Vector2 aimDirection = Vector2.Right;
     private ProjectileStats projectileStats;
+    private int projectileCount = 1;
+    private float speedMultiplier = 1.0f;
+    private float spreadMultiplier = 1.0f;
     private float gravity;
-    private Vector2[][] trajectoryPoints; // Array of trajectory arrays for multiple projectiles
-    private int projectileCount = 1; // How many projectiles this spell fires
+    private Vector2[][] trajectoryPoints;
     
     public override void _Ready()
     {
@@ -32,11 +34,13 @@ public partial class AimIndicator : Node2D
         
         gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
         
-        // Initialize for single projectile (will be resized when needed)
+        // Initialize for single projectile
         InitializeTrajectoryArrays(1);
         
-        // Default stats (will be overridden when spell is prepared)
+        // Default stats
         projectileStats = ProjectileStats.GetProjectileStats("ice_shard");
+        
+        GD.Print("AimIndicator ready!");
     }
     
     private void InitializeTrajectoryArrays(int count)
@@ -47,10 +51,12 @@ public partial class AimIndicator : Node2D
         {
             trajectoryPoints[i] = new Vector2[TrajectoryPoints];
         }
+        GD.Print($"AimIndicator: Initialized for {count} projectiles");
     }
     
     public override void _Process(double delta)
     {
+        // Smooth fade in/out
         float targetAlpha = isVisible ? 1.0f : 0.0f;
         currentAlpha = Mathf.MoveToward(currentAlpha, targetAlpha, FadeSpeed * (float)delta);
         
@@ -58,6 +64,7 @@ public partial class AimIndicator : Node2D
         color.A = currentAlpha;
         Modulate = color;
         
+        // Recalculate trajectory every frame when visible (for real-time updates)
         if (currentAlpha > 0.01f)
         {
             CalculateTrajectory();
@@ -70,35 +77,42 @@ public partial class AimIndicator : Node2D
         // Calculate trajectory for each projectile
         for (int projectileIndex = 0; projectileIndex < projectileCount; projectileIndex++)
         {
-            // MATCH the spawn offset from SpellSystem.CreateProjectile()
-            Vector2 spawnOffset = aimDirection * 30; // 30 pixels in front (same as SpellSystem)
+            // Spawn position (30px in front of player, same as SpellSystem)
+            Vector2 spawnOffset = aimDirection * 30;
             Vector2 startPos = spawnOffset;
             
-            // Calculate spread for multiple projectiles (SAME AS SpellSystem.CreateProjectile())
+            // Calculate spread direction for this projectile
             Vector2 projectileDirection = aimDirection;
             if (projectileCount > 1)
             {
-                float spreadAngle = (projectileIndex - (projectileCount - 1) / 2.0f) * 0.3f;
-                projectileDirection = aimDirection.Rotated(spreadAngle);
+                float baseSpreadAngle = (projectileIndex - (projectileCount - 1) / 2.0f) * 0.3f;
+                float actualSpreadAngle = baseSpreadAngle * spreadMultiplier; // Apply spread reduction
+                projectileDirection = aimDirection.Rotated(actualSpreadAngle);
             }
             
             Vector2 initialDirection = projectileDirection.Normalized();
             
-            // EXACTLY match IceLance.Setup()
-            Vector2 velocity = initialDirection * (projectileStats.Speed * projectileStats.InitialSpeedMultiplier);
+            // Apply speed multiplier to base speed
+            float enhancedSpeed = projectileStats.Speed * speedMultiplier;
+            
+            // Initial velocity (same as IceLance.Setup)
+            Vector2 velocity = initialDirection * (enhancedSpeed * projectileStats.InitialSpeedMultiplier);
             Vector2 position = startPos;
             float timeAlive = 0.0f;
             
-            // Match IceLance gravity setup
-            float gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle() * projectileStats.GravityMultiplier;
+            // Gravity setup
+            float effectiveGravity = projectileStats.AffectedByGravity ? 
+                gravity * projectileStats.GravityMultiplier : 0.0f;
             
+            // Simulate trajectory point by point
             for (int i = 0; i < TrajectoryPoints; i++)
             {
                 trajectoryPoints[projectileIndex][i] = position;
                 
-                // Stop if projectile would be "dead"
+                // Stop if projectile would be destroyed
                 if (timeAlive >= projectileStats.LifeTime)
                 {
+                    // Fill remaining points with last position
                     for (int j = i; j < TrajectoryPoints; j++)
                     {
                         trajectoryPoints[projectileIndex][j] = position;
@@ -106,30 +120,24 @@ public partial class AimIndicator : Node2D
                     break;
                 }
                 
-                // EXACTLY match IceLance._PhysicsProcess() logic:
-                
-                // 1. Apply speed decay over time - exponential decay from 150% to 100% of target speed
+                // Apply speed decay (same as IceLance)
                 float decayFactor = Mathf.Exp(-projectileStats.SpeedDecayRate * timeAlive);
-                float speedMultiplier = Mathf.Lerp(1.0f, projectileStats.InitialSpeedMultiplier, decayFactor);
-                float currentHorizontalSpeed = projectileStats.Speed * speedMultiplier;
+                float speedDecayMultiplier = Mathf.Lerp(1.0f, projectileStats.InitialSpeedMultiplier, decayFactor);
+                float currentHorizontalSpeed = enhancedSpeed * speedDecayMultiplier;
                 
-                // 2. Calculate horizontal velocity (maintaining original direction)
+                // Calculate horizontal velocity
                 Vector2 horizontalVelocity = initialDirection * currentHorizontalSpeed;
                 
-                // 3. Apply gravity to vertical component (SAME AS ICELANCE)
-                if (projectileStats.AffectedByGravity)
-                {
-                    velocity.Y += gravity * TimeStep;
-                }
+                // Apply gravity to Y component (accumulates over time, same as IceLance)
+                velocity.Y += effectiveGravity * TimeStep;
                 
-                // 4. Combine horizontal movement with gravity-affected vertical movement
+                // Update velocity (X gets overwritten, Y accumulates - same as IceLance)
                 velocity.X = horizontalVelocity.X;
-                // Don't override Y - it's already affected by gravity above
                 
-                // 5. Move the projectile (SAME AS ICELANCE)
+                // Move projectile
                 position += velocity * TimeStep;
                 
-                // 6. Update time
+                // Update time
                 timeAlive += TimeStep;
             }
         }
@@ -139,16 +147,15 @@ public partial class AimIndicator : Node2D
     {
         if (currentAlpha <= 0.01f || trajectoryPoints == null) return;
         
-        // Use color from projectile stats
+        // Use projectile's signature color
         Color projectileColor = projectileStats.ProjectileColor;
         projectileColor.A = currentAlpha;
         
-        // Draw trajectory line for each projectile (all same color now)
+        // Draw trajectory for each projectile
         for (int projectileIndex = 0; projectileIndex < projectileCount; projectileIndex++)
         {
             if (trajectoryPoints[projectileIndex].Length >= 2)
             {
-                // Draw trajectory with distance-based fading
                 DrawFadedTrajectory(trajectoryPoints[projectileIndex], projectileColor);
             }
         }
@@ -161,7 +168,6 @@ public partial class AimIndicator : Node2D
     {
         if (points.Length < 2) return;
         
-        // Calculate distances and create faded segments
         for (int i = 0; i < points.Length - 1; i++)
         {
             Vector2 currentPoint = points[i];
@@ -191,35 +197,43 @@ public partial class AimIndicator : Node2D
         }
     }
     
-    // New method that accepts projectile stats and count
-    public void ShowAiming(Vector2 direction, ProjectileStats stats, int count = 1)
+    // Main method - accepts all parameters
+    public void ShowAiming(Vector2 direction, ProjectileStats stats, int count = 1, float speedMult = 1.0f, float spreadMult = 1.0f)
     {
         aimDirection = direction.Normalized();
         projectileStats = stats;
+        speedMultiplier = speedMult;
+        spreadMultiplier = spreadMult;
         
-        // Resize trajectory arrays if needed
         if (count != projectileCount)
         {
             InitializeTrajectoryArrays(count);
         }
         
         isVisible = true;
+        
+        // Debug log
+        GD.Print($"AimIndicator: ShowAiming - Count: {count}, Speed: {speedMult:F2}x, Spread: {spreadMult:F2}x");
     }
     
-    // Backward compatibility methods
-    public void ShowAiming(Vector2 direction)
+    public void UpdateDirection(Vector2 direction, ProjectileStats stats, int count = 1, float speedMult = 1.0f, float spreadMult = 1.0f)
     {
-        ShowAiming(direction, ProjectileStats.GetProjectileStats("ice_shard"), 1);
-    }
-    
-    public void ShowAiming(Vector2 direction, float speed)
-    {
-        ShowAiming(direction, new ProjectileStats(speed), 1);
-    }
-    
-    public void ShowAiming(Vector2 direction, ProjectileStats stats)
-    {
-        ShowAiming(direction, stats, 1);
+        // Just update parameters - trajectory will recalculate automatically in _Process
+        aimDirection = direction.Normalized();
+        projectileStats = stats;
+        speedMultiplier = speedMult;
+        spreadMultiplier = spreadMult;
+        
+        if (count != projectileCount)
+        {
+            InitializeTrajectoryArrays(count);
+        }
+        
+        // Debug log (less frequent)
+        if (speedMult > 1.01f || spreadMult < 0.99f)
+        {
+            GD.Print($"AimIndicator: UpdateDirection - Speed: {speedMult:F2}x, Spread: {spreadMult:F2}x");
+        }
     }
     
     public void HideAiming()
@@ -227,16 +241,25 @@ public partial class AimIndicator : Node2D
         isVisible = false;
     }
     
-    public void UpdateDirection(Vector2 direction, ProjectileStats stats, int count = 1)
+    // Backward compatibility methods
+    public void ShowAiming(Vector2 direction)
     {
-        aimDirection = direction.Normalized();
-        projectileStats = stats;
-        
-        // Resize trajectory arrays if needed
-        if (count != projectileCount)
-        {
-            InitializeTrajectoryArrays(count);
-        }
+        ShowAiming(direction, ProjectileStats.GetProjectileStats("ice_shard"), 1, 1.0f, 1.0f);
+    }
+    
+    public void ShowAiming(Vector2 direction, float speed)
+    {
+        ShowAiming(direction, new ProjectileStats(speed), 1, 1.0f, 1.0f);
+    }
+    
+    public void ShowAiming(Vector2 direction, ProjectileStats stats)
+    {
+        ShowAiming(direction, stats, 1, 1.0f, 1.0f);
+    }
+    
+    public void ShowAiming(Vector2 direction, ProjectileStats stats, int count)
+    {
+        ShowAiming(direction, stats, count, 1.0f, 1.0f);
     }
     
     public void UpdateDirection(Vector2 direction)
@@ -246,11 +269,16 @@ public partial class AimIndicator : Node2D
     
     public void UpdateDirection(Vector2 direction, float speed)
     {
-        UpdateDirection(direction, new ProjectileStats(speed), 1);
+        UpdateDirection(direction, new ProjectileStats(speed), 1, 1.0f, 1.0f);
     }
     
     public void UpdateDirection(Vector2 direction, ProjectileStats stats)
     {
-        UpdateDirection(direction, stats, 1);
+        UpdateDirection(direction, stats, 1, 1.0f, 1.0f);
+    }
+    
+    public void UpdateDirection(Vector2 direction, ProjectileStats stats, int count)
+    {
+        UpdateDirection(direction, stats, count, 1.0f, 1.0f);
     }
 }

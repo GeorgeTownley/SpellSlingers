@@ -29,6 +29,11 @@ public partial class Player : CharacterBody2D
     // Spell casting state
     private bool hasSpellPrepared = false;
     private SpellData preparedSpell = null;
+    private bool isChargingSpell = false;
+    private float chargeTime = 0.0f;
+    private const float MaxChargeTime = 2.0f;
+    private const float ChargedMovementMultiplier = 0.2f;
+	private IceLance[] telegraphProjectiles = null;
     
     // Aim indicator
     private AimIndicator aimIndicator;
@@ -122,11 +127,12 @@ public partial class Player : CharacterBody2D
         if (!isOnFloor)
             velocity.Y += gravity * (float)delta;
        
-        // Handle jumping
+        // Handle jumping - reduced jump height while charging
         bool canJump = isOnFloor || coyoteTimer > 0;
         if (Input.IsActionJustPressed("ui_up") && canJump)
         {
-            velocity.Y = JumpVelocity;
+            float jumpMultiplier = isChargingSpell ? 0.2f : 1.0f; // Much weaker jump while charging
+            velocity.Y = JumpVelocity * jumpMultiplier;
             coyoteTimer = 0;
         }
             
@@ -152,15 +158,18 @@ public partial class Player : CharacterBody2D
         float acceleration = isOnFloor ? GroundAcceleration : AirAcceleration;
         float friction = isOnFloor ? GroundFriction : AirFriction;
         
+        // Reduce movement speed while charging spells
+        float speedMultiplier = isChargingSpell ? ChargedMovementMultiplier : 1.0f;
+        
         if (inputX != 0)
         {
             if (Mathf.Sign(inputX) != Mathf.Sign(velocity.X))
             {
-                velocity.X = Mathf.MoveToward(velocity.X, inputX * Speed, (friction + acceleration) * (float)delta);
+                velocity.X = Mathf.MoveToward(velocity.X, inputX * Speed * speedMultiplier, (friction + acceleration) * (float)delta);
             }
             else
             {
-                velocity.X = Mathf.MoveToward(velocity.X, inputX * Speed, acceleration * (float)delta);
+                velocity.X = Mathf.MoveToward(velocity.X, inputX * Speed * speedMultiplier, acceleration * (float)delta);
             }
         }
         else
@@ -229,7 +238,8 @@ public partial class Player : CharacterBody2D
                     Vector2 aimInput = Input.GetVector("aim_left", "aim_right", "aim_up", "aim_down");
                     if (aimInput.Length() > 0.2f && aimIndicator != null)
                     {
-                       aimIndicator.ShowAiming(aimInput.Normalized(), spellData.ProjectileStats, spellData.ProjectileCount);   }
+                        aimIndicator.ShowAiming(aimInput.Normalized(), spellData.ProjectileStats, spellData.ProjectileCount, 1.0f, 1.0f);
+                    }
                 }
                 else
                 {
@@ -237,20 +247,72 @@ public partial class Player : CharacterBody2D
                     elementUI.ClearBuffer();
                 }
             }
+            else if (!isChargingSpell)
+            {
+                // Second press: Start charging spell
+                isChargingSpell = true;
+                chargeTime = 0.0f;
+                
+                // Show telegraph projectiles
+                float initialSpreadMultiplier = 1.0f;
+                telegraphProjectiles = spellSystem.ShowChargeTelegraph(preparedSpell, GlobalPosition, AimDirection, initialSpreadMultiplier);
+                
+                GD.Print("Player: Charging spell...");
+            }
+        }
+        
+        // Handle charging logic
+        if (hasSpellPrepared && isChargingSpell)
+        {
+            if (Input.IsActionPressed("cast_spell"))
+            {
+                // Continue charging
+                chargeTime += (float)GetPhysicsProcessDeltaTime();
+                chargeTime = Mathf.Min(chargeTime, MaxChargeTime);
+                
+                // Update aim indicator with current charge in real-time
+                if (aimIndicator != null)
+                {
+                    float chargeSpeedMultiplier = 1.0f + (chargeTime / MaxChargeTime);
+                    float chargeSpreadMultiplier = 1.0f - (chargeTime / MaxChargeTime * 0.5f);
+                    GD.Print($"Player: Charging - Time: {chargeTime:F2}s, Speed: {chargeSpeedMultiplier:F2}x, Spread: {chargeSpreadMultiplier:F2}x");
+                    aimIndicator.UpdateDirection(AimDirection, preparedSpell.ProjectileStats, preparedSpell.ProjectileCount, chargeSpeedMultiplier, chargeSpreadMultiplier);
+                }
+                
+                // Update telegraph positions with current spread
+                if (telegraphProjectiles != null)
+                {
+                    spellSystem.HideChargeTelegraph(telegraphProjectiles);
+                    float chargeSpreadMultiplier = 1.0f - (chargeTime / MaxChargeTime * 0.5f);
+                    telegraphProjectiles = spellSystem.ShowChargeTelegraph(preparedSpell, GlobalPosition, AimDirection, chargeSpreadMultiplier);
+                }
+            }
             else
             {
-                // Second press: Fire the prepared spell
-                GD.Print($"Player: Firing prepared spell '{preparedSpell.Name}' in direction {AimDirection}");
+                // Released trigger: Fire the charged spell
+                float chargeMultiplier = 1.0f + (chargeTime / MaxChargeTime); // 1.0x to 2.0x speed
+                float spreadMultiplier = 1.0f - (chargeTime / MaxChargeTime * 0.5f); // 1.0x to 0.5x spread
                 
-                spellSystem.CastPreparedSpell(preparedSpell, GlobalPosition, AimDirection);
+                GD.Print($"Player: Firing charged spell '{preparedSpell.Name}' with {chargeMultiplier:F2}x speed, {spreadMultiplier:F2}x spread");
                 
-                // Hide aim indicator and reset spell preparation state
+                // Hide telegraph projectiles
+                if (telegraphProjectiles != null)
+                {
+                    spellSystem.HideChargeTelegraph(telegraphProjectiles);
+                    telegraphProjectiles = null;
+                }
+                
+                spellSystem.CastPreparedSpell(preparedSpell, GlobalPosition, AimDirection, chargeMultiplier, spreadMultiplier);
+                
+                // Reset everything
                 if (aimIndicator != null)
                 {
                     aimIndicator.HideAiming();
                 }
                 hasSpellPrepared = false;
                 preparedSpell = null;
+                isChargingSpell = false;
+                chargeTime = 0.0f;
             }
         }
         
@@ -258,12 +320,22 @@ public partial class Player : CharacterBody2D
         if (Input.IsActionJustPressed("ui_cancel") && hasSpellPrepared)
         {
             GD.Print("Player: Cancelled prepared spell.");
+            
+            // Hide telegraph projectiles
+            if (telegraphProjectiles != null)
+            {
+                spellSystem.HideChargeTelegraph(telegraphProjectiles);
+                telegraphProjectiles = null;
+            }
+            
             if (aimIndicator != null)
             {
                 aimIndicator.HideAiming();
             }
             hasSpellPrepared = false;
             preparedSpell = null;
+            isChargingSpell = false;
+            chargeTime = 0.0f;
         }
     }
    
@@ -276,14 +348,24 @@ public partial class Player : CharacterBody2D
         if (aimInput.Length() > 0.2f)
         {
             AimDirection = aimInput.Normalized();
-            
-            // Show/update aim indicator only when spell is prepared
-            if (hasSpellPrepared && aimIndicator != null)
-            {
-               aimIndicator.ShowAiming(AimDirection, preparedSpell.ProjectileStats, preparedSpell.ProjectileCount);
-aimIndicator.UpdateDirection(AimDirection, preparedSpell.ProjectileStats, preparedSpell.ProjectileCount);  }
         }
-        else
+        
+        // Show/update aim indicator only when spell is prepared
+        if (hasSpellPrepared && aimIndicator != null && aimInput.Length() > 0.2f)
+        {
+            // Calculate current charge multipliers
+            float chargeSpeedMultiplier = 1.0f;
+            float chargeSpreadMultiplier = 1.0f;
+            
+            if (isChargingSpell)
+            {
+                chargeSpeedMultiplier = 1.0f + (chargeTime / MaxChargeTime); // 1.0x to 2.0x
+                chargeSpreadMultiplier = 1.0f - (chargeTime / MaxChargeTime * 0.5f); // 1.0x to 0.5x
+            }
+            
+            aimIndicator.ShowAiming(AimDirection, preparedSpell.ProjectileStats, preparedSpell.ProjectileCount, chargeSpeedMultiplier, chargeSpreadMultiplier);
+        }
+        else if (aimInput.Length() <= 0.2f)
         {
             // Hide aim indicator when not actively aiming
             if (aimIndicator != null)
@@ -302,5 +384,14 @@ aimIndicator.UpdateDirection(AimDirection, preparedSpell.ProjectileStats, prepar
     public string GetPreparedSpellName()
     {
         return preparedSpell?.Name ?? "";
+    }
+    
+    // Damage system for projectile impacts
+    public void TakeDamage(float damage)
+    {
+        GD.Print($"Player took {damage:F1} damage!");
+        
+        // TODO: Implement health system, knockback, invincibility frames, etc.
+        // For now just log the damage
     }
 }
