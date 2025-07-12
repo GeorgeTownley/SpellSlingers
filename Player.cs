@@ -31,7 +31,7 @@ public partial class Player : CharacterBody2D
     private SpellData preparedSpell = null;
     private bool isChargingSpell = false;
     private float chargeTime = 0.0f;
-    private const float MaxChargeTime = 2.0f;
+    private const float MaxChargeTime = 1.0f;
     private const float ChargedMovementMultiplier = 0.2f;
 	private IceLance[] telegraphProjectiles = null;
     
