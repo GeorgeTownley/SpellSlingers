@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://bimlyc2uygx1x"]
+
+[ext_resource type="Script" path="res://scripts/characters/Player.cs" id="1_nqwe0"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ajpre"]
+radius = 16.8
+height = 64.2
+
+[node name="Player" type="CharacterBody2D"]
+script = ExtResource("1_nqwe0")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_ajpre")
+
+[node name="Polygon2D" type="Polygon2D" parent="CollisionShape2D"]
+texture_scale = Vector2(0, 0)
+polygon = PackedVector2Array(0, -30, 15, -25, 15, 25, 0, 30, -15, 25, -15, -25)
