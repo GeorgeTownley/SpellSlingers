@@ -1,14 +1,9 @@
-[gd_scene load_steps=12 format=3 uid="uid://cqlmdilkc6kcv"]
+[gd_scene load_steps=10 format=3 uid="uid://cqlmdilkc6kcv"]
 
-[ext_resource type="Script" path="res://scripts/characters/Player.cs" id="1_brijd"]
 [ext_resource type="Script" path="res://scripts/main.cs" id="1_rvu43"]
 [ext_resource type="PackedScene" uid="uid://d0adxiq08tk00" path="res://scenes/ui/ElementBufferUI.tscn" id="2_kdpj1"]
 [ext_resource type="Script" path="res://scripts/ui/ElementBufferUI.cs" id="3_uqyk0"]
 [ext_resource type="PackedScene" uid="uid://dhwbod277jywi" path="res://scenes/systems/SpellSystem.tscn" id="4_id06a"]
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_kgvim"]
-radius = 19.2
-height = 68.1
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ensr5"]
 size = Vector2(20, 1440)
@@ -27,17 +22,6 @@ size = Vector2(250, 10)
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_rvu43")
-
-[node name="Player" type="CharacterBody2D" parent="."]
-position = Vector2(80, 563)
-script = ExtResource("1_brijd")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
-position = Vector2(1.25, 1)
-shape = SubResource("CapsuleShape2D_kgvim")
-
-[node name="Polygon2D" type="Polygon2D" parent="Player/CollisionShape2D"]
-polygon = PackedVector2Array(0, -30, 15, -25, 15, 25, 0, 30, -15, 25, -15, -25)
 
 [node name="Walls" type="Node2D" parent="."]
 
