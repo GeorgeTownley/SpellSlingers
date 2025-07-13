@@ -1,28 +1,32 @@
-[gd_scene load_steps=11 format=3 uid="uid://cqlmdilkc6kcv"]
+[gd_scene load_steps=12 format=3 uid="uid://cqlmdilkc6kcv"]
 
 [ext_resource type="Script" path="res://scripts/characters/Player.cs" id="1_brijd"]
+[ext_resource type="Script" path="res://scripts/main.cs" id="1_rvu43"]
 [ext_resource type="PackedScene" uid="uid://d0adxiq08tk00" path="res://scenes/ui/ElementBufferUI.tscn" id="2_kdpj1"]
 [ext_resource type="Script" path="res://scripts/ui/ElementBufferUI.cs" id="3_uqyk0"]
 [ext_resource type="PackedScene" uid="uid://dhwbod277jywi" path="res://scenes/systems/SpellSystem.tscn" id="4_id06a"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_kgvim"]
+radius = 19.2
+height = 68.1
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ensr5"]
-size = Vector2(20, 649)
+size = Vector2(20, 1440)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_65pag"]
-size = Vector2(20, 649)
+size = Vector2(20, 1440)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_nylb2"]
-size = Vector2(1152, 20)
+size = Vector2(2560, 20)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_yo787"]
-size = Vector2(1152, 20)
+size = Vector2(2560, 20)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_aslxp"]
 size = Vector2(250, 10)
 
 [node name="Main" type="Node2D"]
+script = ExtResource("1_rvu43")
 
 [node name="Player" type="CharacterBody2D" parent="."]
 position = Vector2(80, 563)
@@ -33,60 +37,59 @@ position = Vector2(1.25, 1)
 shape = SubResource("CapsuleShape2D_kgvim")
 
 [node name="Polygon2D" type="Polygon2D" parent="Player/CollisionShape2D"]
-scale = Vector2(0.485, 0.485)
 polygon = PackedVector2Array(0, -30, 15, -25, 15, 25, 0, 30, -15, 25, -15, -25)
 
 [node name="Walls" type="Node2D" parent="."]
 
 [node name="Ground Right" type="StaticBody2D" parent="Walls"]
-position = Vector2(1152, 324.5)
+position = Vector2(2560, 720)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/Ground Right"]
 shape = SubResource("RectangleShape2D_ensr5")
 
 [node name="ColorRect" type="ColorRect" parent="Walls/Ground Right/CollisionShape2D"]
 offset_left = -10.0
-offset_top = -324.5
+offset_top = -720.0
 offset_right = 10.0
-offset_bottom = 324.5
+offset_bottom = 720.0
 metadata/_edit_use_anchors_ = true
 
 [node name="Ground Left" type="StaticBody2D" parent="Walls"]
-position = Vector2(0, 324.5)
+position = Vector2(0, 720)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/Ground Left"]
 shape = SubResource("RectangleShape2D_65pag")
 
 [node name="ColorRect" type="ColorRect" parent="Walls/Ground Left/CollisionShape2D"]
 offset_left = -10.0
-offset_top = -324.5
+offset_top = -720.0
 offset_right = 10.0
-offset_bottom = 324.5
+offset_bottom = 720.0
 metadata/_edit_use_anchors_ = true
 
 [node name="Ground Top" type="StaticBody2D" parent="Walls"]
-position = Vector2(576, 0)
+position = Vector2(1280, 0)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/Ground Top"]
 shape = SubResource("RectangleShape2D_nylb2")
 
 [node name="ColorRect" type="ColorRect" parent="Walls/Ground Top/CollisionShape2D"]
-offset_left = -576.0
+offset_left = -1280.0
 offset_top = -10.0
-offset_right = 576.0
+offset_right = 1280.0
 offset_bottom = 10.0
 metadata/_edit_use_anchors_ = true
 
 [node name="Ground bottom" type="StaticBody2D" parent="Walls"]
-position = Vector2(576, 649)
+position = Vector2(1280, 1440)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/Ground bottom"]
 shape = SubResource("RectangleShape2D_yo787")
 
 [node name="ColorRect" type="ColorRect" parent="Walls/Ground bottom/CollisionShape2D"]
-offset_left = -576.0
+offset_left = -1280.0
 offset_top = -10.0
-offset_right = 576.0
+offset_right = 1280.0
 offset_bottom = 10.0
 metadata/_edit_use_anchors_ = true
 
