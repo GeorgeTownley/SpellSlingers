@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "avCUWSSwfCYm+NNzdsjPMBgoJpdh2bHRIB39MxRO2uX5xFDu0U+7ozZL8Lf7Z/6CN+YosZ2+VdHEcRAiOflHHg==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\George\\Documents\\coding\\SpellSlingersGame\\SpellSlingersServer\\GamerServer.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\George\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
