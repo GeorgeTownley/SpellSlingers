@@ -47,7 +47,7 @@ public partial class Player : CharacterBody2D
         GD.Print("Player ready!");
         
         // Create and add aim indicator as a child
-        var aimIndicatorScene = GD.Load<PackedScene>("res://AimIndicator.tscn");
+        var aimIndicatorScene = GD.Load<PackedScene>("res://scenes/ui/AimIndicator.tscn");
         if (aimIndicatorScene != null)
         {
             aimIndicator = aimIndicatorScene.Instantiate<AimIndicator>();

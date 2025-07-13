@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cgcjrqg7txrv3"]
 
-[ext_resource type="Script" path="res://IceLance.cs" id="1_7riu3"]
+[ext_resource type="Script" path="res://scripts/projectiles/IceLance.cs" id="1_7riu3"]
 
 [node name="IceLance" type="Area2D"]
 script = ExtResource("1_7riu3")
@@ -14,3 +14,4 @@ polygon = PackedVector2Array(0, -8, 20, 0, 0, 8)
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
 scale = Vector2(1, 0.4375)
 polygon = PackedVector2Array(0, -8, 20, 0, 0, 8)
+F

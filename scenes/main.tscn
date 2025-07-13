@@ -1,9 +1,9 @@
 [gd_scene load_steps=11 format=3 uid="uid://cqlmdilkc6kcv"]
 
-[ext_resource type="Script" path="res://Player.cs" id="1_brijd"]
-[ext_resource type="PackedScene" uid="uid://d0adxiq08tk00" path="res://ElementBufferUI.tscn" id="2_kdpj1"]
-[ext_resource type="Script" path="res://ElementBufferUI.cs" id="3_uqyk0"]
-[ext_resource type="PackedScene" uid="uid://dhwbod277jywi" path="res://SpellSystem.tscn" id="4_id06a"]
+[ext_resource type="Script" path="res://scripts/characters/Player.cs" id="1_brijd"]
+[ext_resource type="PackedScene" uid="uid://d0adxiq08tk00" path="res://scenes/ui/ElementBufferUI.tscn" id="2_kdpj1"]
+[ext_resource type="Script" path="res://scripts/ui/ElementBufferUI.cs" id="3_uqyk0"]
+[ext_resource type="PackedScene" uid="uid://dhwbod277jywi" path="res://scenes/systems/SpellSystem.tscn" id="4_id06a"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_kgvim"]
 

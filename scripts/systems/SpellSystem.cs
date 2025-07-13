@@ -29,7 +29,7 @@ public partial class SpellSystem : Node
     private void LoadProjectileScenes()
     {
         // Load projectile scenes
-        projectileScenes["ice_shard"] = GD.Load<PackedScene>("res://IceLance.tscn");
+        projectileScenes["ice_shard"] = GD.Load<PackedScene>("res://scenes/projectiles/IceLance.tscn");
         // projectileScenes["fireball"] = GD.Load<PackedScene>("res://FireProjectile.tscn");
         // projectileScenes["lightning"] = GD.Load<PackedScene>("res://LightningProjectile.tscn");
         
